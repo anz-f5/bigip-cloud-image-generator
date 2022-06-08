@@ -1,0 +1,88 @@
+cat << EOF > file.txt
+AWS_BUCKET: "cz-abgmbh" 
+AWS_REGION: "us-east-1"
+BOOT_LOCATIONS: "1" 
+MODULES: "all" 
+PLATFORM: "aws"
+ISO: "/mnt/BIGIP-15.1.4.1-0.0.15.iso"
+EOF
+
+
+
+
+curl -OJ https://cz-abgmbh.s3.amazonaws.com/VMware-ovftool-4.4.3-18663434-lin.x86_64.bundle
+
+chmod +x VMware-ovftool-4.4.3-18663434-lin.x86_64.bundle
+
+sudo ./VMware-ovftool-4.4.3-18663434-lin.x86_64.bundle --eulas-agreed
+
+sudo cp -r /usr/lib/vmware-ovftool /home/ubuntu/vmware-ovftool
+
+curl -OJ 'https://downloads-use-f5.s3.amazonaws.com/big-ip/big-ip_v15.x/15.1.5/english/15.1.5/BIGIP-15.1.5-0.0.10.iso?response-content-disposition=attachment%3B%20filename%3DBIGIP-15.1.5-0.0.10.iso&X-Amz-Security-Token=FwoGZXIvYXdzEBwaDNGKDyqyp86C24BL6yKCAQnxgbN%2BvQdqVV3H9ZA5j84g%2FakoYraFospF5Rbq%2FI%2FmabNeWraDpyDK9UQs4GMUf1qPBXdZLY148Wd3yhJQeKpIcNZ6aiaNX4d17OySBdhUar4xJ1cI%2F7htL125RjFHZpece4TPYoP65Zwxr7iWNOAjDsaXD4lFlnMV2u6x3vb2CfYomdbzjgYyKEwKN3ef8dsnSsSKDxU7A%2FI2scrrNWw2Z%2FtThElfZ0QtHFtZqOxQARw%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220111T022737Z&X-Amz-SignedHeaders=host&X-Amz-Expires=86399&X-Amz-Credential=ASIAWZEHK3GDI6ETECPM%2F20220111%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=f4bcdd4b2636a73dcb3273eea94448d7942e5ca111be31ff1388323fcfb18e56'
+
+
+sudo docker run -it --device="/dev/kvm" -v "/home/ubuntu:/mnt" f5devcentral/f5-bigip-image-generator:latest
+
+cp -r /mnt/vmware-ovftool /usr/lib/vmware-ovftool/; sudo chmod +x /usr/lib/vmware-ovftool/ovftool /usr/lib/vmware-ovftool/ovftool.bin;
+
+PATH=$PATH:/usr/lib/vmware-ovftool/:/f5
+
+which ovftool
+
+export AWS_ACCESS_KEY_ID=""
+export AWS_SECRET_ACCESS_KEY=""
+
+
+build-image --reuse -c config.yaml
+
+sudo docker container ls
+
+sudo docker exec -it 7d6b1256d7f6 bash
+
+{
+   "Version":"2012-10-17",
+   "Statement":[
+      {
+         "Effect": "Allow",
+         "Action": [
+            "s3:GetBucketLocation",
+            "s3:GetObject",
+            "s3:ListBucket" 
+         ],
+         "Resource": [
+            "arn:aws:s3:::cz-abgmbh",
+            "arn:aws:s3:::cz-abgmbh/*"
+         ]
+      },
+      {
+         "Effect": "Allow",
+         "Action": [
+            "s3:GetBucketLocation",
+            "s3:GetObject",
+            "s3:ListBucket",
+            "s3:PutObject",
+            "s3:GetBucketAcl"
+         ],
+         "Resource": [
+            "arn:aws:s3:::cz-abgmbh",
+            "arn:aws:s3:::cz-abgmbh/*"
+         ]
+      },
+      {
+         "Effect": "Allow",
+         "Action": [
+            "ec2:ModifySnapshotAttribute",
+            "ec2:CopySnapshot",
+            "ec2:RegisterImage",
+            "ec2:Describe*"
+         ],
+         "Resource": "*"
+      }
+   ]
+}
+
+aws ec2 import-snapshot --disk-containers "Format=vmdk,UserBucket={S3Bucket=cz-abgmbh,S3Key=BIGIP-15.1.5-0.0.10-disk1.vmdk}"
+
+aws ec2 describe-import-snapshot-tasks --import-task-ids import-snap-014bb9e7b16637290
+
+aws ec2 register-image 
