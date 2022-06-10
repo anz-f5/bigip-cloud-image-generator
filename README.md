@@ -118,3 +118,9 @@ PLATFORM: "azure"
 REUSE: "Yes"
 ISO: "/mnt/BIGIP-15.1.4.1-0.0.15.iso"
 ```
+
+## Terraform
+
+The Terraform code in `ubuntu.tf` in Azure and AWS folders creates a Ubuntu VM in the corresponding Cloud environment for the container to run. The VM is provisioned with an instance type that has hardware virtualisation support built-in as this speeds up the image creation process.
+
+Once the image creation process is completed, `ltm.tf`  references the  created image and provisions a ltm VM with it. When you create the Ubuntu VM, simply move `ltm.tf` to the `temp` folder first prior to running `terraform apply`. Once the image is ready and referenced in `ltm.tf`, move `ltm.tf` back to the Terraform working directory and run `terraform apply` again to create the ltm VM.
